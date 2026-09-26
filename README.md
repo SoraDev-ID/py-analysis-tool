@@ -1,3 +1,6 @@
+[![test](https://github.com/SoraDev-ID/py-analysis-tool/actions/workflows/test.yml/badge.svg)](https://github.com/SoraDev-ID/py-analysis-tool/actions/workflows/test.yml)
+[![build-pycdc](https://github.com/SoraDev-ID/py-analysis-tool/actions/workflows/build-pycdc.yml/badge.svg)](https://github.com/SoraDev-ID/py-analysis-tool/actions/workflows/build-pycdc.yml)
+
 # py-analysis-tool
 
 Educational toolkit for inspecting Python bytecode and packaged application formats.
