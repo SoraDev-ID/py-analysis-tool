@@ -32,7 +32,9 @@ Or just pycdc:
 scripts\build_pycdc.bat
 ```
 
-Or auto-download a prebuilt binary from GitHub Releases (if configured):
+## Prebuilt pycdc (no compiler needed)
+
+Download a prebuilt pycdc binary from GitHub Releases instead of building from source:
 
 ```bash
 python -m py_analysis_tool.main --fetch-pycdc sample.pyc -o out

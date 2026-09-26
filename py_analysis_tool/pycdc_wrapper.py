@@ -41,7 +41,7 @@ _EXE = ".exe" if _WIN else ""
 # Expected asset name pattern is defined below.
 PYCDC_RELEASE_URL = os.environ.get(
     "PYCDC_RELEASE_URL",
-    "",  # leave empty to disable auto-download by default
+    "https://github.com/SoraDev-ID/py-analysis-tool/releases/download/v1.0.0/pycdc-{tag}.zip",
 )
 
 
