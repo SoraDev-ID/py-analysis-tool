@@ -1,0 +1,110 @@
+name: build-pycdc
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Clone pycdc
+        run: git clone --depth 1 https://github.com/zrax/pycdc.git third_party/pycdc
+
+      - name: Configure
+        run: cmake -S third_party/pycdc -B third_party/pycdc/build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build third_party/pycdc/build --config Release
+
+      - name: Locate binaries
+        id: find
+        shell: pwsh
+        run: |
+          $paths = @(
+            "third_party/pycdc/build/Release/pycdc.exe",
+            "third_party/pycdc/build/pycdc.exe",
+            "third_party/pycdc/pycdc.exe"
+          )
+          foreach ($p in $paths) {
+            if (Test-Path $p) { Write-Host "found $p"; Copy-Item $p "pycdc.exe"; }
+          }
+          foreach ($p in @(
+            "third_party/pycdc/build/Release/pycdas.exe",
+            "third_party/pycdc/build/pycdas.exe",
+            "third_party/pycdc/pycdas.exe"
+          )) {
+            if (Test-Path $p) { Write-Host "found $p"; Copy-Item $p "pycdas.exe"; }
+          }
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pycdc-windows-x64
+          path: |
+            pycdc.exe
+            pycdas.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+
+      - name: Clone pycdc
+        run: git clone --depth 1 https://github.com/zrax/pycdc.git third_party/pycdc
+
+      - name: Configure
+        run: cmake -S third_party/pycdc -B third_party/pycdc/build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build third_party/pycdc/build --config Release -j$(nproc)
+
+      - name: Locate binaries
+        run: |
+          find third_party/pycdc -maxdepth 3 -name 'pycdc' -o -name 'pycdas'
+          cp third_party/pycdc/build/pycdc/pycdc pycdc || cp third_party/pycdc/build/pycdc pycdc || true
+          cp third_party/pycdc/build/pycdas/pycdas pycdas || cp third_party/pycdc/build/pycdas pycdas || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pycdc-linux-x64
+          path: |
+            pycdc
+            pycdas
+
+  release:
+    needs: [build-windows, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Package
+        run: |
+          cd artifacts
+          zip -r pycdc-windows-x64.zip pycdc-windows-x64
+          zip -r pycdc-linux-x64.zip pycdc-linux-x64
+          ls -la
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/pycdc-windows-x64.zip
+            artifacts/pycdc-linux-x64.zip

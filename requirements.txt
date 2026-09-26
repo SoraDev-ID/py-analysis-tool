@@ -1,0 +1,8 @@
+xdis>=6.1.0
+tqdm>=4.66.0
+colorama>=0.4.6
+requests>=2.31.0
+
+# Optional, only work on Python <= 3.8:
+# uncompyle6>=3.9.0
+# decompyle3>=3.9.0
